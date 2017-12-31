@@ -8,7 +8,8 @@
 #include "Kismet/GameplayStatics.h"
 
 
-AFPSCharacter::AFPSCharacter()
+AFPSCharacter::AFPSCharacter():
+bIsCarryingObjective(false)
 {
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
