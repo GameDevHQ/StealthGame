@@ -12,7 +12,7 @@ AppliedStrength(1500.f),
 AppliedStrengthAngle(40.f)
 {
     OverlapBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapBoxComponent"));
-    OverlapBoxComponent->SetBoxExtent(FVector(60.f, 60.f, 10.f));
+    OverlapBoxComponent->SetBoxExtent(FVector(60.f, 60.f, 25.f));
     RootComponent = OverlapBoxComponent;
 
     OverlapBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AFPSLaunchPad::OverlapLaunchPad);
