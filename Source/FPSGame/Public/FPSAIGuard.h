@@ -25,6 +25,8 @@ protected:
     UFUNCTION()
     void OnPawnSeen(APawn* Pawn);
 
+    UFUNCTION()
+    void OnPawnHeard(APawn* NoiseInstigator, const FVector& Location, float Volume);
 
 public:	
 	// Called every frame
