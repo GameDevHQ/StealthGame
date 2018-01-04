@@ -38,7 +38,7 @@ void AFPSExtractionZone::HandleOverlap(UPrimitiveComponent* OverlappedComponent,
         AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
         if (GameMode)
         {
-            GameMode->CompleteMission(Character);
+            GameMode->CompleteMission(Character, true);
         }
     }
     else

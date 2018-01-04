@@ -1,5 +1,6 @@
 #include "FPSAIGuard.h"
 #include "Perception/PawnSensingComponent.h"
+#include "FPSGameMode.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -24,6 +25,12 @@ void AFPSAIGuard::OnPawnSeen(APawn* Pawn)
     if (Pawn == nullptr)
     {
         return;
+    }
+
+    AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+    if (GameMode)
+    {
+        GameMode->CompleteMission(Pawn, false);
     }
 }
 
