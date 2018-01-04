@@ -87,5 +87,4 @@ void AFPSAIGuard::SetCurrentState(EAIState NewState)
 void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
