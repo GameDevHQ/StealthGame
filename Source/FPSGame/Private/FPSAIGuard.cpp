@@ -3,7 +3,8 @@
 #include "FPSGameMode.h"
 
 // Sets default values
-AFPSAIGuard::AFPSAIGuard()
+AFPSAIGuard::AFPSAIGuard():
+CurrentState(EAIState::Idle)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -32,10 +33,17 @@ void AFPSAIGuard::OnPawnSeen(APawn* Pawn)
     {
         GameMode->CompleteMission(Pawn, false);
     }
+
+    SetCurrentState(EAIState::Alerted);
 }
 
 void AFPSAIGuard::OnPawnHeard(APawn* NoiseInstigator, const FVector& Location, float Volume)
 {
+    if (CurrentState == EAIState::Alerted)
+    {
+        return;
+    }
+
     FVector Direction = Location - GetActorLocation();
     Direction.Normalize();
 
@@ -46,11 +54,33 @@ void AFPSAIGuard::OnPawnHeard(APawn* NoiseInstigator, const FVector& Location, f
 
     GetWorldTimerManager().ClearTimer(TimeHandle_ResetOrientation);
     GetWorldTimerManager().SetTimer(TimeHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 3.0f);
+
+    if (CurrentState != EAIState::Alerted)
+    {
+        SetCurrentState(EAIState::Suspicious);
+    }
 }
 
 void AFPSAIGuard::ResetOrientation()
 {
+    if (CurrentState == EAIState::Alerted)
+    {
+        return;
+    }
+
     SetActorRotation(OriginalRotation);
+    SetCurrentState(EAIState::Idle);
+}
+
+void AFPSAIGuard::SetCurrentState(EAIState NewState)
+{
+    if (CurrentState == NewState)
+    {
+        return;
+    }
+
+    CurrentState = NewState;
+    OnStateChanged(NewState);
 }
 
 // Called every frame
