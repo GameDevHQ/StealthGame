@@ -1,5 +1,6 @@
 #include "FPSAIGuard.h"
 #include "Perception/PawnSensingComponent.h"
+#include "AI/Navigation/NavigationSystem.h"
 #include "FPSGameMode.h"
 
 // Sets default values
@@ -19,6 +20,19 @@ void AFPSAIGuard::BeginPlay()
 {
 	Super::BeginPlay();
 	OriginalRotation = GetActorRotation();
+
+    if (IsPatroller)
+    {
+        if (StartPatrollingPoint != nullptr && EndPatrollingPoint != nullptr)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("GO."));
+            MoveToNextPatrolPoint();
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("StartPatrollingPoint and EndPatrollingPoint must be set."));
+        }
+    }
 }
 
 void AFPSAIGuard::OnPawnSeen(APawn* Pawn)
@@ -28,6 +42,14 @@ void AFPSAIGuard::OnPawnSeen(APawn* Pawn)
         return;
     }
 
+    // The player is in front of AI. Don't moving anywhere.
+    AController* AIController = Cast<AController>(GetController());
+    if (AIController)
+    {
+        AIController->StopMovement();
+    }
+
+    // Switch to game over state.
     AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
     if (GameMode)
     {
@@ -44,6 +66,13 @@ void AFPSAIGuard::OnPawnHeard(APawn* NoiseInstigator, const FVector& Location, f
         return;
     }
 
+    // The player probably is near to AI. Stop an actual movement to a patrolling point.
+    AController* AIController = Cast<AController>(GetController());
+    if (AIController)
+    {
+        AIController->StopMovement();
+    }
+
     FVector Direction = Location - GetActorLocation();
     Direction.Normalize();
 
@@ -52,9 +81,11 @@ void AFPSAIGuard::OnPawnHeard(APawn* NoiseInstigator, const FVector& Location, f
     NewLookAt.Roll = 0.0f;
     SetActorRotation(NewLookAt);
 
+    // Turn AI to the source of a sound.
     GetWorldTimerManager().ClearTimer(TimeHandle_ResetOrientation);
     GetWorldTimerManager().SetTimer(TimeHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 3.0f);
 
+    // Set the new state for AI.
     if (CurrentState != EAIState::Alerted)
     {
         SetCurrentState(EAIState::Suspicious);
@@ -70,6 +101,11 @@ void AFPSAIGuard::ResetOrientation()
 
     SetActorRotation(OriginalRotation);
     SetCurrentState(EAIState::Idle);
+
+    if (IsPatroller)
+    {
+        UNavigationSystem::SimpleMoveToActor(GetController(), CurrentPatrollingPoint);
+    }
 }
 
 void AFPSAIGuard::SetCurrentState(EAIState NewState)
@@ -83,8 +119,33 @@ void AFPSAIGuard::SetCurrentState(EAIState NewState)
     OnStateChanged(NewState);
 }
 
+void AFPSAIGuard::MoveToNextPatrolPoint()
+{
+    if (CurrentPatrollingPoint == nullptr || CurrentPatrollingPoint == EndPatrollingPoint)
+    {
+        CurrentPatrollingPoint = StartPatrollingPoint;
+    }
+    else
+    {
+        CurrentPatrollingPoint = EndPatrollingPoint;
+    }
+
+    UNavigationSystem::SimpleMoveToActor(GetController(), CurrentPatrollingPoint);
+}
+
 // Called every frame
 void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+    if (IsPatroller && CurrentPatrollingPoint)
+    {
+        // If the we are close to the patrolling point, then go to an another.
+        FVector Distance = GetActorLocation() - CurrentPatrollingPoint->GetActorLocation();
+
+        if (Distance.Size() < DISTANCE_EPSILON)
+        {
+            MoveToNextPatrolPoint();
+        }
+    }
 }
