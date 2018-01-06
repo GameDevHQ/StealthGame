@@ -48,8 +48,13 @@ protected:
 
     void SetCurrentState(EAIState NewState);
 
+    UFUNCTION()
+    void OnRep_GuardState();
+
     FRotator OriginalRotation;
     FTimerHandle TimeHandle_ResetOrientation;
+   
+    UPROPERTY(ReplicatedUsing=OnRep_GuardState)
     EAIState CurrentState;
 
     UPROPERTY(EditInstanceOnly, Category = "AI")

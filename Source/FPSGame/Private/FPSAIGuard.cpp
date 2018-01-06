@@ -1,6 +1,7 @@
 #include "FPSAIGuard.h"
 #include "Perception/PawnSensingComponent.h"
 #include "AI/Navigation/NavigationSystem.h"
+#include "Net/UnrealNetwork.h"
 #include "FPSGameMode.h"
 
 // Sets default values
@@ -13,6 +14,9 @@ CurrentState(EAIState::Idle)
     PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
     PawnSensingComponent->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
     PawnSensingComponent->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnPawnHeard);
+
+    SetReplicates(true);
+    SetReplicateMovement(true);
 }
 
 // Called when the game starts or when spawned
@@ -25,7 +29,6 @@ void AFPSAIGuard::BeginPlay()
     {
         if (StartPatrollingPoint != nullptr && EndPatrollingPoint != nullptr)
         {
-            UE_LOG(LogTemp, Warning, TEXT("GO."));
             MoveToNextPatrolPoint();
         }
         else
@@ -102,7 +105,7 @@ void AFPSAIGuard::ResetOrientation()
     SetActorRotation(OriginalRotation);
     SetCurrentState(EAIState::Idle);
 
-    if (IsPatroller)
+    if (IsPatroller && CurrentPatrollingPoint)
     {
         UNavigationSystem::SimpleMoveToActor(GetController(), CurrentPatrollingPoint);
     }
@@ -116,7 +119,12 @@ void AFPSAIGuard::SetCurrentState(EAIState NewState)
     }
 
     CurrentState = NewState;
-    OnStateChanged(NewState);
+    OnRep_GuardState();
+}
+
+void AFPSAIGuard::OnRep_GuardState()
+{
+    OnStateChanged(CurrentState);
 }
 
 void AFPSAIGuard::MoveToNextPatrolPoint()
@@ -148,4 +156,11 @@ void AFPSAIGuard::Tick(float DeltaTime)
             MoveToNextPatrolPoint();
         }
     }
+}
+
+
+void AFPSAIGuard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    DOREPLIFETIME(AFPSAIGuard, CurrentState);
 }
