@@ -1,18 +1,25 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FPSGameState.h"
+#include "FPSPlayerController.h"
 #include "Engine/World.h"
 
 
 void AFPSGameState::MulticastOnMissionComplete_Implementation(APawn* InstigatorPawn, bool bMissionSuccess)
 {
-    for(FConstPawnIterator it = GetWorld()->GetPawnIterator(); it; it++)
+    for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
     {
-        APawn* Pawn = it->Get();
-        if (Pawn && Pawn->IsLocallyControlled())
+        AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(It->Get());
+        if (PlayerController && PlayerController->IsLocalController())
         {
-            Pawn->DisableInput(nullptr);
+            PlayerController->OnMissionCompleted(InstigatorPawn, bMissionSuccess);
+
+            // Disable input
+            APawn* Pawn = PlayerController->GetPawn();
+            if (Pawn && Pawn->IsLocallyControlled())
+            {
+                Pawn->DisableInput(nullptr);
+            }
         }
     }
 }
-

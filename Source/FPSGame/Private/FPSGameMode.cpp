@@ -32,10 +32,14 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
             if (AvailableActors.Num() > 0)
             {
                 AActor* SpectatingViewpoint = AvailableActors[0];
-                APlayerController* Controller = Cast<APlayerController>(InstigatorPawn->GetController());
-                if (Controller)
+
+                for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
                 {
-                    Controller->SetViewTargetWithBlend(SpectatingViewpoint, 0.5f, EViewTargetBlendFunction::VTBlend_Cubic);
+                    APlayerController* Controller = It->Get();
+                    if (Controller)
+                    {
+                        Controller->SetViewTargetWithBlend(SpectatingViewpoint, 0.5f, EViewTargetBlendFunction::VTBlend_Cubic);
+                    }
                 }
             }
         }
