@@ -3,7 +3,7 @@
 The following project contains a solution for a Stealh Game as the first part of Udemy Course: ["Unreal Engine 4 Mastery: Create Multiplayer Games with C++"](https://www.udemy.com/unrealengine-cpp/)
 
 ### Requirements
-- Unreal Engine 4.18.*
+- Unreal Engine 4.18
 - Visual Studio 2017
 
 ### Features
@@ -18,5 +18,5 @@ The following project contains a solution for a Stealh Game as the first part of
 - Patrolling AI
 
 ### Notes
-- This project is based on the [FPS Template](https://github.com/tomlooman/SimpleFPSTemplate), created by Tom Looman.
+- This project is based on the [FPS Template](https://github.com/tomlooman/SimpleFPSTemplate), created by Tom Looman
 - Content of this project may only be used in Unreal Engine projects, and distrubuted by [Unreal Engine EULA license](https://www.unrealengine.com/en-US/eula)
